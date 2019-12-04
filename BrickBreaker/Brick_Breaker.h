@@ -48,7 +48,7 @@ public:
 private:
 	int padLength, ball_speed, pad_speed, lives, score, combo;
 	bool start, pause, shield, penetrate, play;
-	string specialList = "mdspRrLlFS";
+	string specialList = "mdspRrLlFS+";
 	Vector2f InitializePadPos, InitializeBallPos;
 	cPaddle pad;
 	Ball ball;

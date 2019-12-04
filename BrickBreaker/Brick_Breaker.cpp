@@ -38,7 +38,7 @@ void BrickBreaker::loadLevel(int level)
 	lives = 3;
 	score = 0;
 
-	timer = milliseconds(210 * 1000);
+	timer = milliseconds(270 * 1000);
 	String S_lives(to_string(lives)), S_score(to_string(score));
 	String S_timer_min(to_string(int(timer.asSeconds() / 60))), S_timer_sec(to_string(int(timer.asSeconds()) % 60));
 
@@ -195,6 +195,8 @@ void BrickBreaker::handleEdgeCollision(FloatRect topEdge, FloatRect leftEdge, Fl
 		ball.setRadius(10);
 		pad_speed = 3;
 		pad.setSpeed(pad_speed);
+		padLength = 125;
+		pad.setLength(padLength);
 		
 		String S_lives(to_string(lives));
 		txt_lives.setString(S_lives);
@@ -293,6 +295,8 @@ void BrickBreaker::handleSpecialBrick(char special_char)
 	case 'S':
 		pad.setSpeed(pad_speed / 2);
 		break;
+	case '+':
+		lives += 1;
 	default:
 		break;
 	}
