@@ -73,8 +73,9 @@ void Ball::SetPosition(float X, float Y)
 
 void Ball::Rebound_IncreaseSpeed()
 {
-	dy = -dy * speed;
+	dy *= -speed;
 	dx *= speed;
+
 	if (dy > BALL_MAX_SPEED)
 	{
 		dy = BALL_MAX_SPEED;

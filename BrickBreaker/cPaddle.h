@@ -22,6 +22,8 @@ public:
 	void Update();
 	void setFillColor(const Color&);
 	void setAttributes(Vector2f, int, int);
+	void setLength(float length);
+	void setSpeed(float speed);
 	cPaddle();
 	~cPaddle();
 };

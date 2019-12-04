@@ -90,3 +90,13 @@ void cPaddle::setAttributes(Vector2f pos, int length, int initialSpeed)
 	PaddleShape.setSize(Vector2f(length, 25));
 	PaddleShape.setPosition(Position);
 }
+
+void cPaddle::setLength(float length)
+{
+	PaddleShape.setSize(Vector2f(length, 25));
+}
+
+void cPaddle::setSpeed(float speed)
+{
+	PaddleSpeed = speed;
+}

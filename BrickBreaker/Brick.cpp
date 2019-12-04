@@ -18,6 +18,7 @@ Brick::~Brick() {}
 void Brick::setSpecial(char kind)
 {
 	special = kind;
+	brickShape.setFillColor(Color::Red);
 }
 
 void Brick::setFillColor(Color color)
@@ -60,4 +61,19 @@ const char Brick::handleCollision(FloatRect& ballBound, float& ballRadius)
 void Brick::setPosition(Vector2f pos)
 {
 	position = pos;
+}
+
+char Brick::getSpecialchar()
+{
+	return special;
+}
+
+void Brick::setSize(float x, float y)
+{
+	brickShape.setSize(Vector2f(x, y));
+}
+
+Vector2f Brick::getPosition()
+{
+	return position;
 }

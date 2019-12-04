@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 using namespace sf;
 
-const float BALL_MAX_SPEED = 10.0;
+const float BALL_MAX_SPEED = 7.0f;
 
 class Ball:public CircleShape
 {
@@ -10,7 +10,7 @@ private:
 	Vector2f position;
 	float dx = 0;
 	float dy = 0;
-	int speed = 1.6;
+	float speed = 1.1f;
 public:
 	FloatRect getPosition();
 	
