@@ -1,6 +1,5 @@
 #include "Ball.h"
 
-
 Ball::Ball()
 {
 }
@@ -50,6 +49,56 @@ void Ball::ReturnCenter(int Speed)
 }
 void Ball::SetSpeed(int NewSpeed)
 {
+	int direction = rand() % 2;
 	dx = NewSpeed;
-	dy = NewSpeed;
+	if (direction == 0)
+	{
+		dx = -dx;
+	}
+	direction = rand() % 2;
+
+	dy = -NewSpeed;
+}
+
+void Ball::ReboundEdge()
+{
+	dx = -dx;
+}
+
+void Ball::SetPosition(float X, float Y)
+{
+	position.x = X;
+	position.y = Y;
+}
+
+void Ball::Rebound_IncreaseSpeed()
+{
+	dy *= -speed;
+	dx *= speed;
+
+	if (dy > BALL_MAX_SPEED)
+	{
+		dy = BALL_MAX_SPEED;
+	}
+	if (dy < -BALL_MAX_SPEED)
+	{
+		dy = -BALL_MAX_SPEED;
+	}
+
+	if (dx > BALL_MAX_SPEED)
+	{
+		dx = BALL_MAX_SPEED;
+	}
+	if (dx < -BALL_MAX_SPEED)
+	{
+		dx = -BALL_MAX_SPEED;
+	}
+}
+
+void Ball::setAttributes(Vector2f pos)
+{
+	position.x = pos.x;
+	position.y = pos.y;
+	setRadius(10);
+	setPosition(position);
 }
