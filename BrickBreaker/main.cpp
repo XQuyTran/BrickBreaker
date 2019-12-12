@@ -8,7 +8,6 @@ int main()
 	Texture	texture;
 	Sprite sprite;
 
-	//brick_game.loadLevel(0);
 	if (!texture.loadFromFile("BrickBreakerData/image/3.jpg"))
 	{
 		std::cout << "Load Textured failed";

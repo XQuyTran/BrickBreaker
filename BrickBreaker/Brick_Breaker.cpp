@@ -52,7 +52,7 @@ BrickBreaker::BrickBreaker()
 {
 	padLength = 125;
 	ball_speed = 3;
-	pad_speed = 3;
+	pad_speed = 4;
 	start = false;
 	pause = false;
 	shield = false;

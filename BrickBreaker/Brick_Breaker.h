@@ -14,7 +14,6 @@
 using namespace std;
 using namespace sf;
 
-void Brick_Breaker();
 const int wWidth = 1024;
 const int wHeight = 768;
 
