@@ -16,6 +16,7 @@ Ball::Ball(float x, float y)
 	this->setRadius(10);
 	this->setPosition(position);
 }
+
 void Ball::ReboundTopOrBot()
 {
 	dy = -dy;
@@ -25,6 +26,7 @@ void Ball::ReboundPaddle()
 	dx = -dx*speed;
 	dy *= speed;
 }
+
 void Ball::update()
 {
 	position.x += dx;
@@ -73,8 +75,12 @@ void Ball::SetPosition(float X, float Y)
 
 void Ball::Rebound_IncreaseSpeed()
 {
-	bool change = true;
+	// khai báo biến kiểm tra vận tốc đã được thay đổi, khởi gán là true
+	bool change_x = true, change_y = true;
 
+	// kiểm tra vận tốc theo phương dọc có lớn hơn vận tốc tối đa
+	// nếu đúng thì gán lại vận tốc thành vận tốc tối đa
+	// đánh dấu vận tốc chưa được thay đổi nếu ngược lại
 	if (dy > BALL_MAX_SPEED)
 	{
 		dy = BALL_MAX_SPEED;
@@ -87,7 +93,7 @@ void Ball::Rebound_IncreaseSpeed()
 		}
 		else
 		{
-			change = false;
+			change_y = false;
 		}
 	}
 	
@@ -103,12 +109,14 @@ void Ball::Rebound_IncreaseSpeed()
 		}
 		else
 		{
-			change = false;
+			change_x = false;
 		}
 	}
-	
-	if (!change)
+
+	// kiểm tra vận tốc được thay đổi
+	if (!change_y && !change_x)
 	{
+		// tăng tốc và đổi hướng di chuyển
 		dy *= -speed;
 		dx *= speed;
 	}
@@ -116,8 +124,13 @@ void Ball::Rebound_IncreaseSpeed()
 
 void Ball::setAttributes(Vector2f pos)
 {
+	// Gán vị trí của trái banh về lại ban đầu
 	position.x = pos.x;
 	position.y = pos.y;
+	
+	// Gán bán kính của trái banh về lại ban đầu
 	setRadius(10);
+	
+	// Gọi phương thức đặt vị trí trên cửa sổ màn hình
 	setPosition(position);
 }
