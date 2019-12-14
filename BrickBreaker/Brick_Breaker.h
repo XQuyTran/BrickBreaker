@@ -103,6 +103,9 @@ public:
 	
 	// Phương thức lấy số lượng viên gạch còn lại
 	int getRemainBricks();
+
+	// Phương thức tạo lại 1 viên gạch khi đat được combo nhất định
+	void restoreBrick();
 private:
 	int padLength, ball_speed, pad_speed, lives, score, combo;
 	bool start, pause, shield, penetrate, play;
@@ -114,10 +117,11 @@ private:
 	ContextSettings setting;
 	list<Brick> brick_list, shield_brick;
 	list<int> highScore;
-	Text Lives, Score, txt_lives, txt_score, txt_timer_min, txt_timer_sec, continue_guide, start_guide, colon, txt_togglePause;
+	Text Lives, Score, txt_lives, txt_score, txt_timer_min, txt_timer_sec, start_guide, colon;
 	Font font, numeric_font;
 	list<Brick>::iterator pos, shieldPos;
 	Time timer, _timer;
+	Mouse inGameMouse;
 	void resetBallPad();
 	
 };

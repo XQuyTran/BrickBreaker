@@ -67,6 +67,8 @@ void BrickBreaker::loadLevel(int level)
 	txt_score.setString(S_score);
 	txt_timer_min.setString(S_timer_min);
 	txt_timer_sec.setString(S_timer_sec);
+
+	play = true;
 }
 
 BrickBreaker::BrickBreaker()
@@ -78,7 +80,7 @@ BrickBreaker::BrickBreaker()
 	// độ giảm thời gian
 	padLength = 125;
 	ball_speed = 3;
-	pad_speed = 3;
+	pad_speed = 7;
 	start = false;
 	pause = false;
 	shield = false;
@@ -136,10 +138,6 @@ BrickBreaker::BrickBreaker()
 	txt_timer_sec.setPosition(wWidth / 2 + 30, 30);
 	txt_timer_sec.setStyle(Text::Bold);
 
-	continue_guide.setCharacterSize(60);
-	continue_guide.setFont(font);
-	continue_guide.setString("PRESS SPACE TO CONTINUE\n   OR PRESS ESC TO QUIT");
-
 	start_guide.setCharacterSize(60);
 	start_guide.setFont(font);
 	start_guide.setString("PRESS SPACE TO START\n\tPRESS P TO PAUSE\n\tPRESS ESC TO QUIT");
@@ -150,11 +148,6 @@ BrickBreaker::BrickBreaker()
 	colon.setString(":");
 	colon.setPosition(wWidth / 2 + 20, 15);
 	colon.setStyle(Text::Bold);
-
-	txt_togglePause.setCharacterSize(60);
-	txt_togglePause.setFont(font);
-	txt_togglePause.setString("PRESS SPACE TO CONTINUE\n\t\tPRESS S TO SAVE\n\t\tPRESS ESC TO QUIT");
-	txt_togglePause.setPosition(wWidth / 2 - 125, wHeight / 2 -45);
 }
 
 BrickBreaker::~BrickBreaker()
@@ -242,10 +235,11 @@ void BrickBreaker::handleEdgeCollision(FloatRect topEdge, FloatRect leftEdge, Fl
 		penetrate = false;
 		ball.setFillColor(Color::White);
 		ball.setRadius(10);
-		pad_speed = 3;
+		pad_speed = 7;
 		pad.setSpeed(pad_speed);
 		padLength = 125;
 		pad.setLength(padLength);
+		combo = 0;
 		
 		String S_lives(to_string(lives));
 		txt_lives.setString(S_lives);
@@ -263,6 +257,10 @@ void BrickBreaker::resetBallPad()
 
 void BrickBreaker::draw_game(Sprite sprite)
 {
+	if (!play)
+	{
+		return;
+	}
 	// cập nhật vị trí banh và thanh trượt
 	pad.Update();
 	ball.update();
@@ -425,7 +423,17 @@ void BrickBreaker::handleBrickCollision()
 	
 			// tính combo và cộng điểm
 			combo++;
-			score += 2 * combo;
+
+			// kiểm tra combo là hệ số của 10
+			if (combo % 5 == 0)
+			{
+				// điểm thêm vào được nhân với combo/2 (lấy phần nguyên)
+				score += (2 * combo) * (combo / 2);
+			}
+			else
+			{
+				score += 2 * combo;
+			}
 			
 			// đặt lại chuỗi ghi số diểm để in ra màn hình
 			String S_score(to_string(score));
@@ -433,6 +441,8 @@ void BrickBreaker::handleBrickCollision()
 
 			// xóa viên gạch
 			pos = brick_list.erase(pos);
+
+			restoreBrick();
 		}
 		else
 		{
@@ -492,6 +502,11 @@ void BrickBreaker::Countdown_timer()
 
 void BrickBreaker::gameOverHandle(Sprite sprite)
 {
+	if (!play)
+	{
+		return;
+	}
+
 	// xóa màn hình và vẽ lại hình nền
 	window.clear();
 	window.draw(sprite);
@@ -539,23 +554,44 @@ void BrickBreaker::gameOverHandle(Sprite sprite)
 	displayHighScore(sprite);
 	writeHighScore();
 
+	Text playAgainTxt("PLAY AGAIN", font, 70), ExitTxt("EXIT", font, 70);
+	Vector2f drawPos = InitializePadPos;
+	drawPos.y -= 75;
+
+	playAgainTxt.setPosition(drawPos);
+	drawPos.y += 75;
+	ExitTxt.setPosition(drawPos);
+
+	FloatRect playAgainTxtBound = playAgainTxt.getGlobalBounds(), ExitTxtBound = ExitTxt.getGlobalBounds();
+
+	window.draw(playAgainTxt);
+	window.draw(ExitTxt);
+	window.display();
+
 	pause = true;
 	while (pause)
 	{
-		// kiểm tra phím Space được nhấn
-		if (Keyboard::isKeyPressed(Keyboard::Space))
+		if (Mouse::isButtonPressed(Mouse::Left))
 		{
-			// đặt lại trạng thái trò chơi như mới mở
-			pause = false;
-			start = false;
-			play = false;
-		}
-		// kiểm tra phím ESC được nhấn
-		if (Keyboard::isKeyPressed(Keyboard::Escape))
-		{
-			// đóng trò chơi
-			pause = false;
-			window.close();
+			Vector2i int_mouse_pos = inGameMouse.getPosition(window);
+			Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
+
+			if (playAgainTxtBound.contains(mousePos))
+			{
+				// đặt lại trạng thái trò chơi như mới mở
+				pause = false;
+				start = false;
+				play = false;
+			}
+			else
+			{
+				if (ExitTxtBound.contains(mousePos))
+				{
+					// đóng trò chơi
+					pause = false;
+					window.close();
+				}
+			}
 		}
 	}
 	
@@ -602,58 +638,77 @@ void BrickBreaker::loadShieldBrick()
 
 void BrickBreaker::togglePause()
 {
+	Text continueTxt("CONTINUE", font, 70), SaveTxt("SAVE GAME", font, 70), ExitTxt("Exit", font, 70);
+	Vector2f drawPos = start_guide.getPosition();
+	drawPos.x += 100;
+
+	continueTxt.setPosition(drawPos);
+	drawPos.y += 100;
+
+	SaveTxt.setPosition(drawPos);
+	drawPos.y += 100;
+
+	ExitTxt.setPosition(drawPos);
+
+	FloatRect conTxtBound = continueTxt.getGlobalBounds(), SavTxtBound = SaveTxt.getGlobalBounds(), ExTxtBound = ExitTxt.getGlobalBounds();
+
 	// đặt trạng thái tạm dừng game
 	// in pause menu ra màn hình
 	pause = true;
-	window.draw(txt_togglePause);
+	window.draw(continueTxt);
+	window.draw(SaveTxt);
+	window.draw(ExitTxt);
 	window.display();
 
 	// vòng lặp đợi người dùng nhấn phím theo hướng dẫn
 	while (pause)
 	{
-		// kiểm tra phím Space được nhấn
-		if (Keyboard::isKeyPressed(Keyboard::Space))
+		if (Mouse::isButtonPressed(Mouse::Left))
 		{
-			// tắt trạng thái tạm dừng game
-			pause = false;
-		}
-		
-		// kiểm tra phím 'S' được nhấn
-		if (Keyboard::isKeyPressed(Keyboard::S))
-		{
-			// gọi phương thức lưu game
-			saveGame();
+			Vector2i int_mouse_pos = inGameMouse.getPosition(window);
+			Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
 
-			// tạo đối tượng chữ in ra màn hình thông báo game đã lưu
-			Text saved("GAME SAVED", font, 60);
-			saved.setPosition(txt_togglePause.getPosition());
-			saved.setFillColor(Color::White);
+			if (conTxtBound.contains(mousePos))
+			{
+				// tắt trạng thái tạm dừng game
+				pause = false;
+			}
+			else
+			{
+				if (SavTxtBound.contains(mousePos))
+				{
+					// gọi phương thức lưu game
+					saveGame();
 
-			// ẩn pause menu và in thông báo đã lưu ra màn hình
-			txt_togglePause.setFillColor(Color::Transparent);
-			window.draw(txt_togglePause);
-			window.draw(saved);
-			window.display();
-			
-			// tạm dừng trong 2 giây
-			Time dur;
-			dur = milliseconds(2000);
-			sleep(dur);
+					// tạo đối tượng chữ in ra màn hình thông báo game đã lưu
+					Text saved("GAME SAVED", font, 70);
+					saved.setPosition(SaveTxt.getPosition());
+					saved.setFillColor(Color::White);
 
-			// ẩn thông báo và hiện lại pause menu
-			saved.setFillColor(Color::Transparent);
-			txt_togglePause.setFillColor(Color::White);
-			window.draw(txt_togglePause);
-			window.draw(saved);
-			window.display();
-		}
-		
-		// kiểm tra phím ESC được nhấn
-		if (Keyboard::isKeyPressed(Keyboard::Escape))
-		{
-			// tắt trạng thái tạm dừng và đóng cửa sổ game
-			pause = false;
-			window.close();
+					// ẩn pause menu và in thông báo đã lưu ra màn hình
+					window.draw(saved);
+					window.display();
+
+					// tạm dừng trong 2 giây
+					Time dur;
+					dur = milliseconds(2000);
+					sleep(dur);
+
+					// ẩn thông báo và hiện lại pause menu
+					saved.setFillColor(Color::Transparent);
+					window.draw(saved);
+					window.display();
+				}
+				else
+				{
+					if (ExTxtBound.contains(mousePos))
+					{
+						// tắt trạng thái tạm dừng và đóng cửa sổ game
+						pause = false;
+						window.close();
+					}
+				}
+			}
 		}
 	}
 }
@@ -724,6 +779,11 @@ void BrickBreaker::loadGame()
 	// ký hiệu vật phẩm đặc biệt
 	// chuỗi để đọc số mạng, thời gian và điểm
 	ifstream f("BrickBreakerData/save.txt");
+
+	if (!f.is_open())
+	{
+		return;
+	}
 	Vector2f pos = { 0,100 };
 	char brick_kind;
 	string str_read;
@@ -788,6 +848,9 @@ void BrickBreaker::loadGame()
 	
 	// đóng file
 	f.close();
+
+	// đặt trạng thái bắt đầu chơi
+	play = true;
 }
 
 void BrickBreaker::startMenu()
@@ -798,66 +861,83 @@ void BrickBreaker::startMenu()
 		// tải hình nền start menu vào game
 		Texture background;
 		background.loadFromFile("BrickBreakerData/image/1.jpg");
+		Text newGame("NEW GAME", font, 70), LoadGame("LOAD GAME", font, 70), Exit("Exit", font, 70);
 		
 		// đặt vị trí, kiểu chữ in đậm cho hướng dẫn vào chơi trên màn hình
 		Vector2f position = start_guide.getPosition();
-		position.x -= 75;
-		Text begin_guide("PRESS ENTER TO START A NEW GAME\nPRESS L TO LOAD LAST SAVE GAME\nPRESS ESC TO QUIT", font, 70);
-		begin_guide.setPosition(position);
-		begin_guide.setStyle(Text::Bold);
+		position.x += 100;
+		position.y -= 200;
+		newGame.setPosition(position);
+
+		position.y += 100;
+		LoadGame.setPosition(position);
+
+		position.y += 100;
+		Exit.setPosition(position);
+
+		newGame.setStyle(Text::Bold);
+		LoadGame.setStyle(Text::Bold);
+		Exit.setStyle(Text::Bold);
+
+		FloatRect newGamePos = newGame.getGlobalBounds(), LoadGamePos = LoadGame.getGlobalBounds(), ExitPos = Exit.getGlobalBounds();
 
 		// vẽ hình nền và hướng dẫn ra màn hình
 		window.draw(Sprite(background));
-		window.draw(begin_guide);
+		window.draw(newGame);
+		window.draw(LoadGame);
+		window.draw(Exit);
 		window.display();
 
 		// đợi người dùng nhấn phím theo hướng dẫn
 		while (true)
 		{
-			// kiểm tra phím Enter được nhấn
-			if (Keyboard::isKeyPressed(Keyboard::Enter))
+			if (Mouse::isButtonPressed(Mouse::Left))
 			{
-				// khai báo biến lưu level của trò chơi
-				int level;
-				
-				// chọn ngẫu nhiên 1 trong 6 level mẫu
-				for (int i = 0; i < rand() % 6 + 1; i++)
+				Vector2i int_mouse_pos = inGameMouse.getPosition(window);
+				Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
+
+				// kiểm tra phím Enter được nhấn
+				if (newGamePos.contains(mousePos))
 				{
-					level = rand() % 6 + 1;
+					// khai báo biến lưu level của trò chơi
+					int level;
+
+					// chọn ngẫu nhiên 1 trong 6 level mẫu
+					for (int i = 0; i < rand() % 6 + 1; i++)
+					{
+						level = rand() % 6 + 1;
+					}
+
+					// nạp level đó vào game
+					loadLevel(level);
+
+					// thoát vòng lặp
+					break;
 				}
+				else
+				{
+					// kiểm tra phím 'L' được nhấn
+					if (LoadGamePos.contains(mousePos))
+					{
 
-				// nạp level đó vào game
-				loadLevel(level);
-				
-				// đặt trạng thái bắt đầu chơi
-				play = true;
+						// tải level đã lưu vào game
+						loadGame();
 
-				// thoát vòng lặp
-				break;
-			}
-			
-			// kiểm tra phím 'L' được nhấn
-			if (Keyboard::isKeyPressed(Keyboard::L))
-			{
-				// đặt trạng thái bắt đầu chơi
-				play = true;
+						// thoát vòng lặp
+						break;
+					}
+
+					// kiểm tra phím Escape được nhấn
+					if (ExitPos.contains(mousePos))
+					{
+						// thoát game
+						exit(0);
+					}
+				}
 				
-				// tải level đã lưu vào game
-				loadGame();
-				
-				// thoát vòng lặp
-				break;
-			}
-			
-			// kiểm tra phím Escape được nhấn
-			if (Keyboard::isKeyPressed(Keyboard::Escape))
-			{
-				// thoát game
-				exit(0);
 			}
 		}
 	}
-
 }
 
 void BrickBreaker::saveHighScore()
@@ -929,7 +1009,7 @@ void BrickBreaker::loadHighScore()
 		// kiểm tra đọc được chuỗi khác rỗng
 		if (!s.empty())
 		{
-			// ghio số điểm vào danh sách
+			// ghi số điểm vào danh sách
 			highScore.push_back(stoi(s));
 		}
 		
@@ -994,6 +1074,12 @@ void BrickBreaker::displayHighScore(Sprite sprite)
 			scoreText.setFillColor(Color::Cyan);
 			scoreText.setStyle(Text::Bold);
 		}
+		else
+		{
+			// số điểm được tô màu trắng và in thường
+			scoreText.setFillColor(Color::White);
+			scoreText.setStyle(Text::Regular);
+		}
 
 		// in số điểm ra màn hình
 		// dời vị trí in, chuyển sang điểm số tiếp theo trong danh sách
@@ -1001,15 +1087,6 @@ void BrickBreaker::displayHighScore(Sprite sprite)
 		draw_pos.y += 100;
 		++pos;
 	}
-
-	// dời vị trí xuống góc dưới bảng điểm cao
-	// in hướng dẫn nhấn phím
-	draw_pos.x -= 100;
-	continue_guide.setPosition(draw_pos);
-	window.draw(continue_guide);
-
-	// hiển thị ra màn hình
-	window.display();
 }
 
 int BrickBreaker::getRemainLives()
@@ -1020,4 +1097,42 @@ int BrickBreaker::getRemainLives()
 int BrickBreaker::getRemainBricks()
 {
 	return brick_list.size();
+}
+
+void BrickBreaker::restoreBrick()
+{
+	if (combo % 3 != 0)
+	{
+		return;
+	}
+
+	Vector2f brick_pos = { 0,100 };
+
+	pos = brick_list.begin();
+
+	while (pos != brick_list.end())
+	{
+		if (brick_pos != pos->getPosition())
+		{
+			Brick restore_brick(brick_pos);
+
+			if (rand() % 2 == 1)
+			{
+				restore_brick.setSpecial(specialList[rand() % specialList.length()]);
+			}
+
+			brick_list.insert(pos, restore_brick);
+
+			break;
+		}
+		
+		brick_pos.x += 65;
+		if (brick_pos.x >= 1024)
+		{
+			brick_pos.x = 0;
+			brick_pos.y += 30;
+		}
+
+		++pos;
+	}
 }

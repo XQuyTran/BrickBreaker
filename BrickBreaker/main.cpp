@@ -22,6 +22,14 @@ int main()
 
 	while (brick_game.isOpen())
 	{
+		Event gameEvent;
+		while (brick_game.getWindow().pollEvent(gameEvent))
+		{
+			if (gameEvent.type == gameEvent.Closed)
+			{
+				brick_game.getWindow().close();
+			}
+		}
 		// Gọi phương thứ vẽ ra menu khỏi đầu (nếu người dùng chưa vào chơi)
 		brick_game.startMenu();
 		
