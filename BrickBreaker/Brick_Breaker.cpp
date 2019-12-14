@@ -224,14 +224,19 @@ void BrickBreaker::handleEdgeCollision(FloatRect topEdge, FloatRect leftEdge, Fl
 	}
 	if (ball.getPosition().intersects(pad.getPosition()))
 	{
-		// đặt lại combo
+		// đặt lại combo và tăng tốc banh
 		combo = 0;
 		ball.Rebound_IncreaseSpeed();
 	}
 	if (ball.getPosition().intersects(lowerEdge))
 	{
+		// đặt lại vị trí banh và thanh trượt
 		resetBallPad();
+
+		// trừ 1 mạng
 		--lives;
+
+		// hủy hết hiệu ứng thưởng nếu có
 		penetrate = false;
 		ball.setFillColor(Color::White);
 		ball.setRadius(10);
@@ -239,8 +244,11 @@ void BrickBreaker::handleEdgeCollision(FloatRect topEdge, FloatRect leftEdge, Fl
 		pad.setSpeed(pad_speed);
 		padLength = 125;
 		pad.setLength(padLength);
+
+		// đặt lại combo
 		combo = 0;
 		
+		// cập nhật chuỗi ghi số mạng còn lại
 		String S_lives(to_string(lives));
 		txt_lives.setString(S_lives);
 	}
@@ -554,6 +562,8 @@ void BrickBreaker::gameOverHandle(Sprite sprite)
 	displayHighScore(sprite);
 	writeHighScore();
 
+	// Hiện menu với tùy chọn chơi lại hoặc thoát
+	// tạo và cài đặt thuộc tính cho 2 chuỗi tượng trưng cho 2 tùy chọn
 	Text playAgainTxt("PLAY AGAIN", font, 70), ExitTxt("EXIT", font, 70);
 	Vector2f drawPos = InitializePadPos;
 	drawPos.y -= 75;
@@ -562,29 +572,36 @@ void BrickBreaker::gameOverHandle(Sprite sprite)
 	drawPos.y += 75;
 	ExitTxt.setPosition(drawPos);
 
+	// Lấy phạm vi của 2 chuỗi
 	FloatRect playAgainTxtBound = playAgainTxt.getGlobalBounds(), ExitTxtBound = ExitTxt.getGlobalBounds();
 
+	// Vẽ ra màn hình
 	window.draw(playAgainTxt);
 	window.draw(ExitTxt);
 	window.display();
 
+	// Tạm dừng vẽ để chờ người dùng click chuột vào tùy chọn mong muốn
 	pause = true;
 	while (pause)
 	{
+		// kiểm tra chuột trái được nhấn
 		if (Mouse::isButtonPressed(Mouse::Left))
 		{
+			// Tạo vector lưu vị trí của con trỏ chuột
 			Vector2i int_mouse_pos = inGameMouse.getPosition(window);
 			Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
 
+			// kiểm tra trỏ chuột được nhấn trong phạm vi của tùy chọn chơi lại
 			if (playAgainTxtBound.contains(mousePos))
 			{
-				// đặt lại trạng thái trò chơi như mới mở
+				// đặt lại trạng thái trò chơi từ đầu
 				pause = false;
 				start = false;
 				play = false;
 			}
 			else
 			{
+				// kiểm tra trỏ chuột được nhấn trong phạm vi của tùy chọn chơi lại
 				if (ExitTxtBound.contains(mousePos))
 				{
 					// đóng trò chơi
@@ -638,7 +655,10 @@ void BrickBreaker::loadShieldBrick()
 
 void BrickBreaker::togglePause()
 {
+	// tạo 2 chuỗi ứng với 3 tùy chọn tiếp tục, lưu game và thoát
 	Text continueTxt("CONTINUE", font, 70), SaveTxt("SAVE GAME", font, 70), ExitTxt("Exit", font, 70);
+
+	// đặt vị trí cho các tùy chọn
 	Vector2f drawPos = start_guide.getPosition();
 	drawPos.x += 100;
 
@@ -650,6 +670,7 @@ void BrickBreaker::togglePause()
 
 	ExitTxt.setPosition(drawPos);
 
+	// lấy phạm vi của các chuỗi
 	FloatRect conTxtBound = continueTxt.getGlobalBounds(), SavTxtBound = SaveTxt.getGlobalBounds(), ExTxtBound = ExitTxt.getGlobalBounds();
 
 	// đặt trạng thái tạm dừng game
@@ -660,14 +681,17 @@ void BrickBreaker::togglePause()
 	window.draw(ExitTxt);
 	window.display();
 
-	// vòng lặp đợi người dùng nhấn phím theo hướng dẫn
+	// vòng lặp đợi người dùng click chuột vào tùy chọn mong muốn
 	while (pause)
 	{
+		// kiểm tra click chuột trái
 		if (Mouse::isButtonPressed(Mouse::Left))
 		{
+			// tạo vector lưu vị trí con trỏ chuột lúc click chuột trái
 			Vector2i int_mouse_pos = inGameMouse.getPosition(window);
 			Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
 
+			// kiểm tra vị trí trỏ chuột trong phạm vi tùy chọn tiếp tục
 			if (conTxtBound.contains(mousePos))
 			{
 				// tắt trạng thái tạm dừng game
@@ -675,6 +699,7 @@ void BrickBreaker::togglePause()
 			}
 			else
 			{
+				// kiểm tra vị trí trỏ chuột trong phạm vi tùy chọn lưu game
 				if (SavTxtBound.contains(mousePos))
 				{
 					// gọi phương thức lưu game
@@ -701,6 +726,7 @@ void BrickBreaker::togglePause()
 				}
 				else
 				{
+					// kiểm tra vị trí trỏ chuột trong phạm vi tùy chọn thoát game
 					if (ExTxtBound.contains(mousePos))
 					{
 						// tắt trạng thái tạm dừng và đóng cửa sổ game
@@ -888,15 +914,17 @@ void BrickBreaker::startMenu()
 		window.draw(Exit);
 		window.display();
 
-		// đợi người dùng nhấn phím theo hướng dẫn
+		// đợi người dùng click chuột vào tùy chọn tương ứng
 		while (true)
 		{
+			// kiểm tra click chuột trái
 			if (Mouse::isButtonPressed(Mouse::Left))
 			{
+				// tạo vector lưu vị trí con trỏ chuột
 				Vector2i int_mouse_pos = inGameMouse.getPosition(window);
 				Vector2f mousePos(float(int_mouse_pos.x), float(int_mouse_pos.y));
 
-				// kiểm tra phím Enter được nhấn
+				// kiểm tra click vào tùy chọn chơi mới
 				if (newGamePos.contains(mousePos))
 				{
 					// khai báo biến lưu level của trò chơi
@@ -916,7 +944,7 @@ void BrickBreaker::startMenu()
 				}
 				else
 				{
-					// kiểm tra phím 'L' được nhấn
+					// kiểm tra click vào tùy chọn chơi tiếp game đã lưu
 					if (LoadGamePos.contains(mousePos))
 					{
 
@@ -927,7 +955,7 @@ void BrickBreaker::startMenu()
 						break;
 					}
 
-					// kiểm tra phím Escape được nhấn
+					// kiểm tra click vào tùy chọn thoát game
 					if (ExitPos.contains(mousePos))
 					{
 						// thoát game
@@ -1101,31 +1129,42 @@ int BrickBreaker::getRemainBricks()
 
 void BrickBreaker::restoreBrick()
 {
+	// kiểm tra combo khác bội số của 3
+	// đúng thì trả về
 	if (combo % 3 != 0)
 	{
 		return;
 	}
 
+	// tạo vector để dò vị trí trống trên màn chơi
 	Vector2f brick_pos = { 0,100 };
 
+	// đặt iterator về đầu danh sách viên gạch trên màn chơi
 	pos = brick_list.begin();
 
+	// kiểm tra chưa duyêt tới cuối danh sách
 	while (pos != brick_list.end())
 	{
+		// so sánh vị trí viên gạch khác vị trí đang duyệt
 		if (brick_pos != pos->getPosition())
 		{
+			// tạo viên gạch để phục hồi
 			Brick restore_brick(brick_pos);
 
+			// chọn ngẫu nhiên gạch đặc biệt hay gạch thường
 			if (rand() % 2 == 1)
 			{
+				// chọn ngẫu nhiên vật phẩm đặc biệt
 				restore_brick.setSpecial(specialList[rand() % specialList.length()]);
 			}
 
+			// thêm vào danh sách viên gạch
 			brick_list.insert(pos, restore_brick);
 
 			break;
 		}
 		
+		// dời vị trí duyệt
 		brick_pos.x += 65;
 		if (brick_pos.x >= 1024)
 		{
