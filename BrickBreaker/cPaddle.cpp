@@ -10,10 +10,13 @@ cPaddle::~cPaddle()
 {
 }
 
-cPaddle::cPaddle(float X, float Y)// tao paddle voi toa do X,Y
+cPaddle::cPaddle(float X, float Y)
 {
+	// đặt vị trí thanh trượt
 	Position.x = X;
 	Position.y = Y;
+	
+	// đặt kích thước thanh trượt
 	PaddleShape.setSize(Vector2f(25, 100));
 	PaddleShape.setPosition(Position);
 }
@@ -30,11 +33,13 @@ RectangleShape cPaddle::getShape()
 
 void cPaddle::moveDown()
 {
+	// PaddleSpeed: độ dời thanh trượt
 	Position.y += PaddleSpeed;
 }
 
 void cPaddle::moveUp()
 {
+	// PaddleSpeed: độ dời thanh trượt
 	Position.y -= PaddleSpeed;
 }
 
@@ -45,11 +50,13 @@ void cPaddle::Update()
 
 void cPaddle::moveLeft()
 {
+	// PaddleSpeed: độ dời thanh trượt
 	Position.x -= PaddleSpeed;
 }
 
 void cPaddle::moveRight()
 {
+	// PaddleSpeed: độ dời thanh trượt
 	Position.x += PaddleSpeed;
 }
 
@@ -73,6 +80,7 @@ cPaddle::cPaddle(float X, float Y, int length, int initial_speed)
 	PaddleShape.setPosition(Position);
 }
 
+
 Vector2f cPaddle::GetPosition()
 {
 	return Position;
@@ -85,8 +93,13 @@ void cPaddle::setPosition(Vector2f pos)
 
 void cPaddle::setAttributes(Vector2f pos, int length, int initialSpeed)
 {
+	// đặt vị trí thanh trượt
 	Position = pos;
+	
+	// đặt tốc độ thanh trượt
 	PaddleSpeed = initialSpeed;
+	
+	// đặt độ dài thanh trượt
 	PaddleShape.setSize(Vector2f(length, 25));
 	PaddleShape.setPosition(Position);
 }
